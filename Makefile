@@ -1,6 +1,6 @@
 # Variables
 COMPOSE = docker-compose
-COMPOSE_FILE = docker-compose.yml
+COMPOSE_FILE = srcs/docker-compose.yml
 
 # Default target: build and run containers
 all: up
