@@ -16,7 +16,7 @@ RUN mkdir -p /run/mysqld /var/lib/mysql
 RUN chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
 # Copy the custom configuration file
-COPY my.cnf /etc/my.cnf
+COPY conf/my.cnf /etc/my.cnf
 
 # Set environment variables for MariaDB
 ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -28,7 +28,7 @@ ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
 EXPOSE 3306
 
 # Copy the initialization script
-COPY init.sh /docker-entrypoint-initdb.d/init.sh
+COPY tools/init.sh /docker-entrypoint-initdb.d/init.sh
 RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 
 # Start MariaDB
