@@ -23,8 +23,10 @@ services:
     environment:
       - WORDPRESS_DB_HOST=mariadb
       - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
       - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
     depends_on:
       - mariadb # Start Wordpress only after MariaDB is running
 
@@ -37,10 +39,13 @@ services:
     networks:
       - inception_network
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_root_password
+      - db_password
 
 volumes:
   wordpress_data: # Volume for Wordpress files
@@ -48,3 +53,9 @@ volumes:
 
 networks:
   inception_network:  # Network for container communication
+
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+  db_password:
+    file: ./secrets/db_password.txt
