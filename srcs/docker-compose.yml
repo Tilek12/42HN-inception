@@ -4,6 +4,7 @@ services:
   nginx:
     build: ./requirements/nginx # Build from Dockerfile in /nginx
     container_name: nginx
+    #restart: always
     ports:
       - "443:443" # Map port 443 on host to port 443 in container
     networks:
@@ -14,6 +15,7 @@ services:
   wordpress:
     build: ./requirements/wordpress # Build from Dockerfile in /wordpress
     container_name: wordpress
+    #restart: always
     volumes:
       - wordpress_data:/var/www/html/wordpress #Persistant storage for WordPress files
     networks:
@@ -29,6 +31,7 @@ services:
   mariadb:
     build: ./requirements/mariadb # Build from Dockerfile in /mariadb
     container_name: mariadb
+    #restart: always
     volumes:
       - mariadb_data:/var/lib/mysql # Persistent storage for MariaDB database
     networks:

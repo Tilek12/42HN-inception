@@ -1,13 +1,12 @@
-# Use Alpine as the base image
-FROM alpine:3.16
+# Use Debian Slim as the base image
+FROM debian:bullseye-slim
 
 # Install MariaDB and dependencies
-RUN apk update && \
-	apk add --nocache \
-	mariadb \
+RUN apt-get update && \
+	apt-get install -y \
+	mariadb-server \
 	mariadb-client \
-	tzdata \
-	&& rm -f /var/cache/apk/*
+	&& rm -rf /var/lib/apt/lists/*
 
 # Create directories for MariaDB
 RUN mkdir -p /run/mysqld /var/lib/mysql
@@ -17,12 +16,6 @@ RUN chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
 # Copy the custom configuration file
 COPY conf/my.cnf /etc/my.cnf
-
-# Set environment variables for MariaDB
-ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-ENV MYSQL_DATABASE=${MYSQL_DATABASE}
-ENV MYSQL_USER=${MYSQL_USER}
-ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
 # Expose the default MariaDB port
 EXPOSE 3306
