@@ -1,5 +1,7 @@
 <?php
 
+error_log("This is a test log message.");
+
 // Read the database password from the secret files
 $db_password = trim(file_get_contents('/run/secrets/db_password'));
 
@@ -8,6 +10,8 @@ define('DB_NAME', getenv('WORDPRESS_DB_NAME'));
 define('DB_USER', getenv('WORDPRESS_DB_USER'));
 define('DB_PASSWORD', $db_password);
 define('DB_HOST', getenv('WORDPRESS_DB_HOST'));
+define('DB_CHARSET', 'utf8mb4');
+define('DB_COLLATE', '');
 
 // Define authentication keys and salts
 define('AUTH_KEY',			'put your unique phrase here');
@@ -30,3 +34,5 @@ if (!defined('ABSPATH')) {
 }
 
 require_once ABSPATH . 'wp-settings.php'
+
+?>

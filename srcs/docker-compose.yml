@@ -1,30 +1,33 @@
 version: '3.8'
 
 services:
-  nginx:
-    build: ./requirements/nginx # Build from Dockerfile in /nginx
-    container_name: nginx
-    #restart: always
-    ports:
-      - "443:443" # Map port 443 on host to port 443 in container
-    networks:
-      - inception_network
-    depends_on:
-      - wordpress # Start NGINX only after Wordpress is running
+  # nginx:
+  #   build: ./requirements/nginx # Build from Dockerfile in /nginx
+  #   container_name: nginx
+  #   #restart: always
+  #   ports:
+  #     - "443:443" # Map port 443 on host to port 443 in container
+  #   networks:
+  #     - inception_network
+  #   depends_on:
+  #     - wordpress # Start NGINX only after Wordpress is running
 
   wordpress:
     build: ./requirements/wordpress # Build from Dockerfile in /wordpress
     container_name: wordpress
-    #restart: always
+    restart: always
     volumes:
       - wordpress_data:/var/www/html/wordpress #Persistant storage for WordPress files
     networks:
       - inception_network
     environment:
-      - WORDPRESS_DB_HOST=mariadb
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+      - WORDPRESS_DB_HOST=${WP_DB_HOST}
+      - WORDPRESS_DB_USER=${WP_DB_USER}
+      - WORDPRESS_DB_NAME=${WP_DB_NAME}
       - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+      - WORDPRESS_MAIN_USER=${WP_MAIN_USER}
+      - WORDPRESS_MAIN_PASSWORD_FILE=/run/secrets/db_password
+      - WORDPRESS_MAIN_EMAIL=${WP_MAIN_EMAIL}
     secrets:
       - db_password
     depends_on:
@@ -33,7 +36,9 @@ services:
   mariadb:
     build: ./requirements/mariadb # Build from Dockerfile in /mariadb
     container_name: mariadb
-    #restart: always
+    restart: always
+    ports:
+      - "3306:3306" # Expose MariaDB port to the host (optional for debugging)
     volumes:
       - mariadb_data:/var/lib/mysql # Persistent storage for MariaDB database
     networks:
@@ -41,8 +46,8 @@ services:
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
     secrets:
       - db_root_password
       - db_password
@@ -53,9 +58,10 @@ volumes:
 
 networks:
   inception_network:  # Network for container communication
+    driver: bridge
 
 secrets:
   db_root_password:
-    file: ./secrets/db_root_password.txt
+    file: ../secrets/db_root_password.txt
   db_password:
-    file: ./secrets/db_password.txt
+    file: ../secrets/db_password.txt

@@ -1,14 +1,20 @@
-# Use Debian as the base image
+# Use Debian Bullseye as the base image
 FROM debian:bullseye-slim
 
 # Install PHP, php-fpm, and WordPress dependencies
 RUN apt-get update && \
 	apt-get install -y \
-	php-fpm \
-	php-mysql \
+	php7.4-fpm \
+	php7.4-mysql \
 	curl \
 	unzip \
+	default-mysql-client \
 	&& rm -rf /var/lib/apt/lists/*
+
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp
 
 # Create the /var/www/html directory
 RUN mkdir -p /var/www/html
@@ -30,5 +36,14 @@ RUN chown -R www-data:www-data /var/www/html/wordpress
 # Expose port 9000 (php-fpm)
 EXPOSE 9000
 
-# Start php-fpm
+# Copy the custom entrypoint script
+COPY tools/entrypoint.sh /entrypoint.sh
+
+# Make the script executable
+RUN chmod +x /entrypoint.sh
+
+# Use the custom entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Start php-fpm in the foreground
 CMD ["php-fpm7.4", "-F"]

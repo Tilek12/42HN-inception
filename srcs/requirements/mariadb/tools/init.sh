@@ -1,20 +1,42 @@
 #!/bin/bash
 
-# Initialize the database if it doesn't exist
-if [ ! -d "/var/lib/mysql/mysql" ]; then
-	echo "Initializing MariaDB database..."
+# Check if the data directory is empty
+if [ -z "$(ls -A /var/lib/mysql)" ]; then
+	echo "Data directory is empty. Initializing MariaDB database..."
 	mysql_install_db --user=mysql --datadir=/var/lib/mysql
+else
+	echo "Data directory is not empty. Skipping initialization."
 fi
 
 # Start MariaDB temporarily to run SQL commands
+echo "Starting MariaDB temporarily..."
 mysqld_safe --user=mysql --datadir=/var/lib/mysql &
 sleep 5
 
-# Create the database and user
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE $MYSQL_DATABASE;"
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';"
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';"
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "FLUSH PRIVILEGES;"
+# Create the WordPress database
+echo "Creating database $MYSQL_DATABASE..."
+mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
+	  -e "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
+
+# Create the WordPress user and grant privileges
+echo "Creating user $MYSQL_USER..."
+mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
+	  -e "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password)';"
+mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
+	  -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';"
+
+# Change the root password
+echo "Changing root password..."
+mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
+	  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat /run/secrets/db_root_password)';"
+
+# Flush privileges
+echo "Flushing privileges..."
+mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
+	  -e "FLUSH PRIVILEGES;"
 
 # Stop the temporary MariaDB instance
-mysqladmin -uroot -p"$MYSQL_ROOT_PASSWORD" shutdown
+echo "Stopping temporary MariaDB instance..."
+mysqladmin -uroot -p"$(cat /run/secrets/db_root_password)" shutdown
+
+echo "Initialization complete."

@@ -15,14 +15,22 @@ RUN mkdir -p /run/mysqld /var/lib/mysql
 RUN chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
 # Copy the custom configuration file
-COPY conf/my.cnf /etc/my.cnf
+COPY conf/50-server.cnf etc/mysql/mariadb.conf.d/50-server.cnf
+
+# Copy the initialization script
+COPY tools/init.sh /init.sh
+
+# Copy the custom entrypoint script
+COPY tools/entrypoint.sh /entrypoint.sh
+
+# Make the script executable
+RUN chmod +x /init.sh /entrypoint.sh
 
 # Expose the default MariaDB port
 EXPOSE 3306
 
-# Copy the initialization script
-COPY tools/init.sh /docker-entrypoint-initdb.d/init.sh
-RUN chmod +x /docker-entrypoint-initdb.d/init.sh
+# Use the custom entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Start MariaDB
 CMD ["mysqld", "--user=mysql"]
