@@ -1,0 +1,14 @@
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore IDE files
+.idea
+.vscode
+
+# Ignore local secrets
+secrets/*
+
+# Ignore logs and temporary files
+*.log
+tmp/

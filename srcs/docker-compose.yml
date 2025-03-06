@@ -24,12 +24,16 @@ services:
       - WORDPRESS_DB_HOST=${WP_DB_HOST}
       - WORDPRESS_DB_USER=${WP_DB_USER}
       - WORDPRESS_DB_NAME=${WP_DB_NAME}
-      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
-      - WORDPRESS_MAIN_USER=${WP_MAIN_USER}
-      - WORDPRESS_MAIN_PASSWORD_FILE=/run/secrets/db_password
-      - WORDPRESS_MAIN_EMAIL=${WP_MAIN_EMAIL}
+      - WORDPRESS_ADMIN=${WP_ADMIN}
+      - WORDPRESS_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
     secrets:
       - db_password
+    healthcheck:
+      test: ["CMD", "php-fpm7.4", "-t"]
+      # test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
       - mariadb # Start Wordpress only after MariaDB is running
 
@@ -46,11 +50,15 @@ services:
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
     secrets:
       - db_root_password
       - db_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-p$(cat /run/secrets/db_root_password)"]
+      # test: ["CMD", "mysql", "-uroot", "-p$(cat /run/secrets/db_root_password)", "-e", "\"USE $MYSQL_DATABASE; SELECT 1;\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   wordpress_data: # Volume for Wordpress files

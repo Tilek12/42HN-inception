@@ -1,6 +1,9 @@
 <?php
 
-error_log("This is a test log message.");
+// Set HTTP_HOST if it's not defined
+if (!isset($_SERVER['HTTP_HOST'])) {
+	$_SERVER['HTTP_HOST'] = 'localhost';
+}
 
 // Read the database password from the secret files
 $db_password = trim(file_get_contents('/run/secrets/db_password'));
