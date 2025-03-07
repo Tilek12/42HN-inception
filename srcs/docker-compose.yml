@@ -1,16 +1,18 @@
 version: '3.8'
 
 services:
-  # nginx:
-  #   build: ./requirements/nginx # Build from Dockerfile in /nginx
-  #   container_name: nginx
-  #   #restart: always
-  #   ports:
-  #     - "443:443" # Map port 443 on host to port 443 in container
-  #   networks:
-  #     - inception_network
-  #   depends_on:
-  #     - wordpress # Start NGINX only after Wordpress is running
+  nginx:
+    build: ./requirements/nginx # Build from Dockerfile in /nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "443:443" # Map port 443 on host to port 443 in container
+    networks:
+      - inception_network
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    depends_on:
+      - wordpress # Start NGINX only after Wordpress is running
 
   wordpress:
     build: ./requirements/wordpress # Build from Dockerfile in /wordpress
