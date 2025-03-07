@@ -63,7 +63,17 @@ services:
 
 volumes:
   wordpress_data: # Volume for Wordpress files
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${LOGIN}/data/wordpress
+      o: bind
   mariadb_data:  # Volume for MariaDB database
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/${LOGIN}/data/mariadb
+      o: bind
 
 networks:
   inception_network:  # Network for container communication
