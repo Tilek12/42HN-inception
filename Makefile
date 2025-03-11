@@ -16,6 +16,8 @@ all: build up
 # Build Docker images
 build:
 	@echo "$(BLUE)Building Docker images...$(RESET)"
+	mkdir -p /home/tkubanyc/data/mariadb
+	mkdir -p /home/tkubanyc/data/wordpress
 	$(COMPOSE) -f $(COMPOSE_FILE) build
 
 # Start containers
@@ -42,6 +44,9 @@ stop:
 clean: down
 	@echo "$(RED)Removing volumes...$(RESET)"
 	$(COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all
+
+# flcean: clean
+# 	rm
 
 # Rebuild and restart containers
 re: clean build up

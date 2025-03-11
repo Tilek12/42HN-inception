@@ -1,52 +1,63 @@
 version: '3.8'
 
+# Settings for Services
 services:
+
+  # NGINX Service
   nginx:
     build: ./requirements/nginx # Build from Dockerfile in /nginx
     container_name: nginx
     restart: always
     ports:
       - "443:443" # Map port 443 on host to port 443 in container
+    volumes:
+      - wordpress_data:/var/www/html
     networks:
       - inception_network
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
     depends_on:
-      - wordpress # Start NGINX only after Wordpress is running
+      wordpress: # Start NGINX only after Wordpress is running
+        condition: service_healthy
 
+  # WordPress Service
   wordpress:
-    build: ./requirements/wordpress # Build from Dockerfile in /wordpress
+    build: ./requirements/wordpress
     container_name: wordpress
     restart: always
     volumes:
-      - wordpress_data:/var/www/html/wordpress #Persistant storage for WordPress files
+      - wordpress_data:/var/www/html
     networks:
       - inception_network
     environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
       - WORDPRESS_DB_HOST=${WP_DB_HOST}
       - WORDPRESS_DB_USER=${WP_DB_USER}
       - WORDPRESS_DB_NAME=${WP_DB_NAME}
+      - WORDPRESS_TITLE=${WP_TITLE}
       - WORDPRESS_ADMIN=${WP_ADMIN}
       - WORDPRESS_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
+      - WORDPRESS_REGULAR_USER=${WP_REGULAR_USER}
+      - WORDPRESS_REGULAR_EMAIL=${WP_REGULAR_EMAIL}
     secrets:
       - db_password
+      - wp_password
     healthcheck:
       test: ["CMD", "php-fpm7.4", "-t"]
-      # test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
     depends_on:
-      - mariadb # Start Wordpress only after MariaDB is running
+      mariadb: # Start Wordpress only after MariaDB is running
+        condition: service_healthy
 
+  # MariaDB Service
   mariadb:
-    build: ./requirements/mariadb # Build from Dockerfile in /mariadb
+    build: ./requirements/mariadb
     container_name: mariadb
     restart: always
-    ports:
-      - "3306:3306" # Expose MariaDB port to the host (optional for debugging)
     volumes:
-      - mariadb_data:/var/lib/mysql # Persistent storage for MariaDB database
+      - mariadb_data:/var/lib/mysql
     networks:
       - inception_network
     environment:
@@ -59,30 +70,35 @@ services:
       test: ["CMD-SHELL", "mysqladmin ping -uroot -p$(cat /run/secrets/db_root_password)"]
       # test: ["CMD", "mysqladmin", "ping", "-uroot", "-p$(cat /run/secrets/db_root_password)"]
       # test: ["CMD", "mysql", "-uroot", "-p$(cat /run/secrets/db_root_password)", "-e", "\"USE $MYSQL_DATABASE; SELECT 1;\""]
-      interval: 30s
+      interval: 20s
       timeout: 10s
       retries: 3
 
+# Volumes for MariaDB and WordPress
 volumes:
-  wordpress_data: # Volume for Wordpress files
+  wordpress_data:
     driver: local
     driver_opts:
       type: none
-      device: /home/${LOGIN}/data/wordpress
+      device: ${VOLUME_PATH}/wordpress
       o: bind
-  mariadb_data:  # Volume for MariaDB database
+  mariadb_data:
     driver: local
     driver_opts:
       type: none
-      device: /home/${LOGIN}/data/mariadb
+      device: ${VOLUME_PATH}/mariadb
       o: bind
 
+# Network for container communication
 networks:
-  inception_network:  # Network for container communication
+  inception_network:
     driver: bridge
 
+# Secret files for passwords
 secrets:
   db_root_password:
     file: ../secrets/db_root_password.txt
   db_password:
     file: ../secrets/db_password.txt
+  wp_password:
+    file: ../secrets/wp_password.txt

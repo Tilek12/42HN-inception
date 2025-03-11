@@ -3,23 +3,20 @@ FROM debian:bullseye-slim
 
 # Install NGINX, OpenSSL, and envsubst
 RUN apt-get update && \
-	apt-get install -y nginx openssl gettext-base && \
+	apt-get install -y nginx openssl gettext-base netcat && \
 	rm -rf /var/lib/apt/lists/*
 
-# Create the SSL directory
-RUN mkdir -p /etc/nginx/ssl
-
 # Copy the custom NGINX configuration
-COPY conf/nginx.conf /etc/nginx/nginx.conf.template
+COPY conf/custom-site /etc/nginx/sites-available/custom-site.template
+
+# Copy the wait-for-it script
+COPY tools/wait-for-it.sh /wait-for-it.sh
 
 # Copy the entrypoint script
 COPY tools/entrypoint.sh /entrypoint.sh
 
-# Make the entrypoint script executable
-RUN chmod +x /entrypoint.sh
-
-# Expose port 443 (HTTPS)
-EXPOSE 443
+# Make the scripts executable
+RUN chmod +x /wait-for-it.sh /entrypoint.sh
 
 # Use the custom entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]

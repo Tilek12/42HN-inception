@@ -21,27 +21,27 @@ mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
 # Create the WordPress user and grant privileges
 echo "Creating user $MYSQL_USER..."
 mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
-	  -e "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password)';" \
-	  || exit 1
+	  -e "CREATE USER IF NOT EXISTS '$MYSQL_USER'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password)';" #\
+	#   || exit 1
 mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
-	  -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';" \
-	  || exit 1
+	  -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%';" #\
+	#   || exit 1
 
 # Change the root password
 echo "Changing root password..."
 mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
-	  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat /run/secrets/db_root_password)';" \
-	  || exit 1
+	  -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat /run/secrets/db_root_password)';" #\
+	#   || exit 1
 
 # Flush privileges
 echo "Flushing privileges..."
 mysql -uroot -p"$(cat /run/secrets/db_root_password)" \
-	  -e "FLUSH PRIVILEGES;" \
-	  || exit 1
+	  -e "FLUSH PRIVILEGES;" #\
+	#   || exit 1
 
 # Stop the temporary MariaDB instance
 echo "Stopping temporary MariaDB instance..."
-mysqladmin -uroot -p"$(cat /run/secrets/db_root_password)" shutdown \
-			|| exit 1
+mysqladmin -uroot -p"$(cat /run/secrets/db_root_password)" shutdown #\
+			# || exit 1
 
 echo "Initialization complete."

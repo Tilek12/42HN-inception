@@ -26,9 +26,6 @@ COPY tools/entrypoint.sh /entrypoint.sh
 # Make the script executable
 RUN chmod +x /init.sh /entrypoint.sh
 
-# Expose the default MariaDB port
-EXPOSE 3306
-
 # Use the custom entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
 
