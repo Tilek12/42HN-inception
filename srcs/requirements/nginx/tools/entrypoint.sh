@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sleep 20
-
 # Create SSL directory if it doesn't exist
 mkdir -p /etc/nginx/ssl
 
@@ -17,12 +15,16 @@ else
 fi
 
 # Replace ${DOMAIN_NAME} in the NGINX configuration template
-echo "Configuring NGINX..."
-envsubst '${DOMAIN_NAME}' < /etc/nginx/sites-available/custom-site.template > /etc/nginx/sites-available/custom-site
-rm -rf /etc/nginx/sites-available/custom-site.template
+if [ ! -f /etc/nginx/sites-available/custom-site ]; then
+	echo "Configuring NGINX..."
+	envsubst '${DOMAIN_NAME}' \
+			< /etc/nginx/sites-available/custom-site.template \
+			> /etc/nginx/sites-available/custom-site
+	rm -rf /etc/nginx/sites-available/custom-site.template
 
-# Create symbolic link for the configuration file
-ln -s /etc/nginx/sites-available/custom-site /etc/nginx/sites-enabled/
+	# Create symbolic link for the configuration file
+	ln -s /etc/nginx/sites-available/custom-site /etc/nginx/sites-enabled/
+fi
 
 # Wait for WordPress to be ready
 echo "Waiting for WordPress to be ready..."

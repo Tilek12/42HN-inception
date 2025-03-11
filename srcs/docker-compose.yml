@@ -5,7 +5,7 @@ services:
 
   # NGINX Service
   nginx:
-    build: ./requirements/nginx # Build from Dockerfile in /nginx
+    build: ./requirements/nginx
     container_name: nginx
     restart: always
     ports:
@@ -16,8 +16,8 @@ services:
       - inception_network
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
-    depends_on:
-      wordpress: # Start NGINX only after Wordpress is running
+    depends_on: # Start NGINX only after WordPress is ready and running
+      wordpress:
         condition: service_healthy
 
   # WordPress Service
@@ -42,13 +42,14 @@ services:
     secrets:
       - db_password
       - wp_password
-    healthcheck:
-      test: ["CMD", "php-fpm7.4", "-t"]
-      interval: 30s
+    healthcheck: # Check if PHP-FPM is listening on port 9000
+      test: ["CMD-SHELL", "nc -z localhost 9000"]
+      interval: 10s
       timeout: 10s
-      retries: 3
+      retries: 10
+      start_period: 10s
     depends_on:
-      mariadb: # Start Wordpress only after MariaDB is running
+      mariadb: # Start WordPress only after MariaDB is ready and running
         condition: service_healthy
 
   # MariaDB Service
@@ -66,13 +67,12 @@ services:
     secrets:
       - db_root_password
       - db_password
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -uroot -p$(cat /run/secrets/db_root_password)"]
-      # test: ["CMD", "mysqladmin", "ping", "-uroot", "-p$(cat /run/secrets/db_root_password)"]
-      # test: ["CMD", "mysql", "-uroot", "-p$(cat /run/secrets/db_root_password)", "-e", "\"USE $MYSQL_DATABASE; SELECT 1;\""]
+    healthcheck: # Check if MariaDB created ${MYSQL_DATABASE} and running
+      test: ["CMD-SHELL", "mysql -uroot -p$(cat /run/secrets/db_root_password) -e \"USE ${MYSQL_DATABASE}; SELECT 1;\""]
       interval: 20s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 10s
 
 # Volumes for MariaDB and WordPress
 volumes:

@@ -8,6 +8,7 @@ RUN apt-get update && \
 	php-mysql \
 	curl \
 	default-mysql-client \
+	netcat \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Download and install WP-CLI
