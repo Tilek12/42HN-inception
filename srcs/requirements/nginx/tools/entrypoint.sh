@@ -1,34 +1,38 @@
 #!/bin/bash
 
-# Create SSL directory if it doesn't exist
-mkdir -p /etc/nginx/ssl
+# Exit on error
+set -e
+
+# Set environment variables
+SSL_DIR="/etc/nginx/ssl"
+CONF_DIR="/etc/nginx/sites-available"
+CONF_FILE="${CONF_DIR}/custom-site"
+
+# Ensure SSL directory exists
+mkdir -p ${SSL_DIR}
 
 # Generate SSL certificates if they don't exist
-if [ ! -f /etc/nginx/ssl/certificate.crt ] || [ ! -f /etc/nginx/ssl/private.key ]; then
+if [ ! -f "${SSL_DIR}/certificate.crt" ] || [ ! -f "${SSL_DIR}/private.key" ]; then
 	echo "Generating SSL certificates..."
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-		-keyout /etc/nginx/ssl/private.key \
-		-out /etc/nginx/ssl/certificate.crt \
+		-keyout "${SSL_DIR}/private.key" \
+		-out "${SSL_DIR}/certificate.crt" \
 		-subj "/C=FR/ST=Paris/L=Paris/O=42/OU=42/CN=${DOMAIN_NAME}"
 else
 	echo "SSL certificates already exist. Skipping generation."
 fi
 
-# Replace ${DOMAIN_NAME} in the NGINX configuration template
-if [ ! -f /etc/nginx/sites-available/custom-site ]; then
+# Generate NGINX configuration file
+if [ ! -f "${CONF_FILE}" ]; then
 	echo "Configuring NGINX..."
-	envsubst '${DOMAIN_NAME}' \
-			< /etc/nginx/sites-available/custom-site.template \
-			> /etc/nginx/sites-available/custom-site
-	rm -rf /etc/nginx/sites-available/custom-site.template
+
+	# Replace ${DOMAIN_NAME} in the NGINX configuration template
+	envsubst '${DOMAIN_NAME}' < "${CONF_FILE}.template" > "${CONF_FILE}"
+	rm -rf "${CONF_FILE}.template"
 
 	# Create symbolic link for the configuration file
-	ln -s /etc/nginx/sites-available/custom-site /etc/nginx/sites-enabled/
+	ln -sf "${CONF_FILE}" /etc/nginx/sites-enabled/
 fi
-
-# Wait for WordPress to be ready
-echo "Waiting for WordPress to be ready..."
-/wait-for-it.sh wordpress:9000 -- echo "WordPress is ready."
 
 # Start NGINX in the foreground
 echo "Starting NGINX..."

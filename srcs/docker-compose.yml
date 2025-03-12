@@ -1,6 +1,7 @@
+# Docker Compose Settings
 version: '3.8'
 
-# Settings for Services
+# Used Services
 services:
 
   # NGINX Service
@@ -16,8 +17,8 @@ services:
       - inception_network
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
-    depends_on: # Start NGINX only after WordPress is ready and running
-      wordpress:
+    depends_on:
+      wordpress: # Start NGINX only after WordPress is ready and running
         condition: service_healthy
 
   # WordPress Service

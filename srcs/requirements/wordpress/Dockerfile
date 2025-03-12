@@ -16,17 +16,14 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 	chmod +x wp-cli.phar && \
 	mv wp-cli.phar /usr/local/bin/wp
 
-# Copy configuration file
-COPY conf/www.conf /etc/php/7.4/fpm/pool.d/www.conf
-
 # Copy the custom entrypoint script
 COPY tools/entrypoint.sh /entrypoint.sh
 
 # Make the script executable
 RUN chmod +x /entrypoint.sh
 
+# Set working directory
+WORKDIR /var/www/html
+
 # Use the custom entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
-
-# Default command (start PHP-FPM)
-CMD ["php-fpm7.4", "-F"]

@@ -1,22 +1,19 @@
 # Use the penultimate stable version of Debian
 FROM debian:bullseye-slim
 
-# Install NGINX, OpenSSL, and envsubst
+# Install NGINX, OpenSSL and envsubst
 RUN apt-get update && \
-	apt-get install -y nginx openssl gettext-base netcat && \
+	apt-get install -y nginx openssl gettext-base && \
 	rm -rf /var/lib/apt/lists/*
 
 # Copy the custom NGINX configuration
 COPY conf/custom-site /etc/nginx/sites-available/custom-site.template
 
-# Copy the wait-for-it script
-COPY tools/wait-for-it.sh /wait-for-it.sh
-
 # Copy the entrypoint script
 COPY tools/entrypoint.sh /entrypoint.sh
 
 # Make the scripts executable
-RUN chmod +x /wait-for-it.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Use the custom entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
