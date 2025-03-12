@@ -9,6 +9,7 @@ RESET	= \033[0m
 # Variables
 COMPOSE = docker-compose
 COMPOSE_FILE = srcs/docker-compose.yml
+DATA_DIR = /home/tkubanyc/data
 
 # Default target: build and run containers
 all: build up
@@ -16,8 +17,8 @@ all: build up
 # Build Docker images
 build:
 	@echo "$(BLUE)Building Docker images...$(RESET)"
-	mkdir -p /home/tkubanyc/data/mariadb
-	mkdir -p /home/tkubanyc/data/wordpress
+	mkdir -p $(DATA_DIR)/mariadb
+	mkdir -p $(DATA_DIR)/wordpress
 	$(COMPOSE) -f $(COMPOSE_FILE) build
 
 # Start containers
@@ -44,9 +45,16 @@ stop:
 clean: down
 	@echo "$(RED)Removing volumes...$(RESET)"
 	$(COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all
+	@echo "$(RED)Removing local data directories...$(RESET)"
+	sudo rm -rf $(DATA_DIR)/mariadb
+	sudo rm -rf $(DATA_DIR)/wordpress
 
-# flcean: clean
-# 	rm
+# Full clean: remove everything (containers, images, volumes, networks)
+fclean: clean
+	@echo "$(RED)Removing all Docker images...$(RESET)"
+	docker system prune -a -f
+	@echo "$(RED)Removing all unused Docker networks...$(RESET)"
+	docker network prune -f
 
 # Rebuild and restart containers
 re: clean build up
@@ -56,4 +64,4 @@ logs:
 	@echo "$(YELLOW)Showing logs...$(RESET)"
 	$(COMPOSE) -f $(COMPOSE_FILE) logs -f
 
-.PHONY: all build up down start stop clean re logs
+.PHONY: all build up down start stop clean fclean re logs
