@@ -45,9 +45,9 @@ services:
       - wp_password
     healthcheck: # Check if PHP-FPM is listening on port 9000
       test: ["CMD-SHELL", "nc -z localhost 9000"]
-      interval: 10s
+      interval: 20s
       timeout: 10s
-      retries: 10
+      retries: 15
       start_period: 10s
     depends_on:
       mariadb: # Start WordPress only after MariaDB is ready and running
@@ -72,7 +72,7 @@ services:
       test: ["CMD-SHELL", "mysql -uroot -p$(cat /run/secrets/db_root_password) -e \"USE ${MYSQL_DATABASE}; SELECT 1;\""]
       interval: 20s
       timeout: 10s
-      retries: 5
+      retries: 10
       start_period: 10s
 
 # Volumes for MariaDB and WordPress

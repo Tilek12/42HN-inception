@@ -61,6 +61,10 @@ if ! wp core is-installed --allow-root > /dev/null 2>&1; then
 		--role=author \
 		--allow-root
 
+	# Install an additional theme
+	echo "Installing additional theme: twentyfourteen..."
+	wp theme install twentyfourteen --activate --allow-root
+
 else
 	echo "WordPress is already installed..."
 fi
