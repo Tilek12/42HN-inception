@@ -103,7 +103,7 @@ It's needed to add confidential information to start this project:
   <img src="https://github.com/Tilek12/42HN-inception/blob/master/.git_docs/secrets.png">
 </p>
 
-- Create **.env** file in the same directory with docker-compose.yml file. There must be variable, neccessary to make settings for Docker related files to each service.
+- Create **.env** file in the same directory with docker-compose.yml file. There must be defined environment variables, neccessary to make settings for Docker related files for each service.
 
 <p align="center">
   <img src="https://github.com/Tilek12/42HN-inception/blob/master/.git_docs/env.png">
